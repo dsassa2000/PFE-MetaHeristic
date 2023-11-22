@@ -1,6 +1,7 @@
 package de.unihildesheim.iis.jadedemo;
 
 import de.unihildesheim.iis.jadedemo.graph.City;
+import de.unihildesheim.iis.jadedemo.graph.MetaheuristicResponse;
 
 public class Metaheuristic {
 
@@ -13,7 +14,7 @@ public class Metaheuristic {
         // If the new solution is worse, calculate an acceptance probability
         return Math.exp((energy - newEnergy) / temperature);
     }
-    public static void metaHeuristic(Tour tour) {
+    public static MetaheuristicResponse metaHeuristic(Tour tour) {
     	  // Set initial temp
         double temp = 10000;
 
@@ -57,6 +58,8 @@ public class Metaheuristic {
 
         System.out.println("Final solution distance: " + best.getDistance());
         System.out.println("Tour: " + best);
+        System.out.println("Tour lenght : "+ best.tourSize());
+        return new MetaheuristicResponse(best.tourSize(),best.getDistance());
     }
 }
 

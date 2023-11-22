@@ -6,10 +6,22 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.StaleProxyException;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import de.unihildesheim.iis.jadedemo.graph.Car;
 import de.unihildesheim.iis.jadedemo.graph.City;
 import de.unihildesheim.iis.jadedemo.graph.TourManager;
 
@@ -30,68 +42,71 @@ public class AgentOne extends Agent {
       public void action() {
         // Receive the incoming message
         ACLMessage aclMsg = receive();
-        // Interpret the message
-        	ACLMessage newMsg = new ACLMessage(ACLMessage.INFORM);
-            newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
             try {
-            	 // Create and add our cities
-                City city = new City(60, 200);
-                TourManager.addCity(city);
-                City city2 = new City(180, 200);
-                TourManager.addCity(city2);
-                City city3 = new City(80, 180);
-                TourManager.addCity(city3);
-                City city4 = new City(140, 180);
-                TourManager.addCity(city4);
-                City city5 = new City(20, 160);
-                TourManager.addCity(city5);
-                City city6 = new City(100, 160);
-                TourManager.addCity(city6);
-                City city7 = new City(200, 160);
-                TourManager.addCity(city7);
-                City city8 = new City(140, 140);
-                TourManager.addCity(city8);
-                City city9 = new City(40, 120);
-                TourManager.addCity(city9);
-                City city10 = new City(100, 120);
-                TourManager.addCity(city10);
-                City city11 = new City(180, 100);
-                TourManager.addCity(city11);
-                City city12 = new City(60, 80);
-                TourManager.addCity(city12);
-                City city13 = new City(120, 80);
-                TourManager.addCity(city13);
-                City city14 = new City(180, 60);
-                TourManager.addCity(city14);
-                City city15 = new City(20, 40);
-                TourManager.addCity(city15);
-                City city16 = new City(100, 40);
-                TourManager.addCity(city16);
-                City city17 = new City(200, 40);
-                TourManager.addCity(city17);
-                City city18 = new City(20, 20);
-                TourManager.addCity(city18);
-                City city19 = new City(60, 20);
-                TourManager.addCity(city19);
-                City city20 = new City(160, 20);
-                TourManager.addCity(city20);
-             // Initialize intial solution
-                Tour currentSolution = new Tour();
-                currentSolution.generateIndividual();
-                System.out.println("DOHA : "+currentSolution);
-				///newMsg.setContentObject(currentSolution);
-                long start = System.currentTimeMillis();
-                Metaheuristic.metaHeuristic(currentSolution);
-                long end = System.currentTimeMillis();
+            	if(aclMsg != null) {
+            		Gson gson = new Gson();
+                	Type carsListType = new TypeToken<List<Car>>(){}.getType();
+                    List<Car> dataCars = gson.fromJson(aclMsg.getContent(), carsListType);
+                    System.out.print("dataCities : " +dataCars);
+                    List<Car> carList = new ArrayList<>();
+          		  for (Car car : dataCars) {
+          		    Car carObject = new Car(car.getName(), car.getFuel_efficiency(),car.getTank_capacity());
+                    carList.add(carObject);
+          		  }
+          		  System.out.println("listcar: " + carList);
+                  ACLMessage newMsg = new ACLMessage(ACLMessage.REQUEST);
+                  newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
+                  byte[] serializedList = serializeObject(carList);
+                  newMsg.setContentObject(serializedList);
+            	}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-            send(newMsg);
-       // }       
+			}    
         block(); // Stop the behaviour until next message is received
       }
     };
     addBehaviour(loop);
+    // Start a server to listen for Python messages
+    startServer();
+  }
+  private void startServer() {
+      new Thread(() -> {
+          try {
+              ServerSocket serverSocket = new ServerSocket(9877);
+              System.out.println("Java Server listening on port 9877");
+
+              while (true) {
+                  Socket socket = serverSocket.accept();
+                  Scanner scanner = new Scanner(socket.getInputStream());
+
+                  while (scanner.hasNextLine()) {
+                      String message = scanner.nextLine();
+                      ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
+                      aclMessage.setContent(message);
+                      aclMessage.addReceiver(getAID());
+                      send(aclMessage);
+                  }
+
+                  scanner.close();
+                  socket.close();
+              }
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+      }).start();
+  }
+//Method to serialize an object into a byte array
+  private byte[] serializeObject(Object obj) {
+      try {
+          ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
+          objectOutputStream.writeObject(obj);
+          objectOutputStream.flush();
+          return byteOutputStream.toByteArray();
+      } catch (IOException e) {
+          e.printStackTrace();
+          return null;
+      }
   }
 }

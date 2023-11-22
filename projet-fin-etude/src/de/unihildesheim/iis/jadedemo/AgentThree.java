@@ -34,11 +34,8 @@ public class AgentThree extends Agent {
         // Interpret the message
         if (aclMsg != null) {
 		try {
-              /*Tour curentSolution = (Tour) aclMsg.getContentObject();
-              System.out.println("doha : " + curentSolution);
-              long start = System.currentTimeMillis();
-              Metaheuristic.metaHeuristic(curentSolution);*/
-              
+		System.out.println("Received message from " + aclMsg.getSender().getLocalName() + ": " + aclMsg.getContentObject());
+		    //float refueling_stops_car = carObject.calculate_refueling_stops(total_distance);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
