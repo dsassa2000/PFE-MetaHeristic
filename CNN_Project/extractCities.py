@@ -11,6 +11,8 @@ import socket
 import folium
 import requests
 import json
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Get a Google Maps API key.
 api_key = "AIzaSyCMWsE4wnAuqIg6MBTXO4iWkp0u6qkmsLo"
@@ -61,7 +63,8 @@ print(listCitiesData)
 city_coordinates_json = json.dumps(listCitiesData)
 #print(city_coordinates_json);
 python_socket.sendall(city_coordinates_json.encode('utf-8'))
-
+# Close the socket
+python_socket.close()    
 m = folium.Map(location=[31.792305849269, -7.080168000000015], zoom_start=4)
 # Add markers for each city to the map
 for city, location in city_coordinates.items():
@@ -69,13 +72,12 @@ for city, location in city_coordinates.items():
 
 # Add lines to represent the links between cities
 citiesD = list(city_coordinates.keys())
+listCongTraffic = []
 for i, city1 in enumerate(citiesD):
     for j, city2 in enumerate(citiesD):
         if i < j:
             start_city = city1
             end_city = city2
-            #print("City 1:", start_city)
-            #print("City 2:", end_city)
             start_location = city_coordinates[start_city]
             end_location = city_coordinates[end_city]
             folium.PolyLine(locations=[start_location, end_location], color="blue").add_to(m)
@@ -94,9 +96,10 @@ for i, city1 in enumerate(citiesD):
                 dataRoutes=data["routes"]
                 for route in dataRoutes:
                     legs = route["legs"]
-                    print("Traffic congestion:", legs[0]["duration_in_traffic"]["text"])
+                    print(start_city + " ==> " + end_city + " : " + legs[0]["duration_in_traffic"]["text"])
+                    listCongTraffic.append(legs[0]["duration_in_traffic"]["text"])
 # Display the map
 m.save("C:/Users/HP/Desktop/PFE-MetaHeristic/CNN_Project/mapCities.html") 
 
 # Close the socket
-python_socket.close()     
+#python_socket.close()     

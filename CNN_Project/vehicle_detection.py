@@ -4,38 +4,57 @@ import numpy as np
 import socket
 import requests
 import json
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.gridspec as gridspec
 
 java_server_address = ('localhost', 9877)
 python_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 python_socket.connect(java_server_address)
-car_petrol_df = pd.read_csv('C:/Users/HP\Downloads/archive (1)/PETROL.csv')
+car_petrol_df = pd.read_csv('C:/Users/HP/Downloads/archive (1)/PETROL.csv')
 
-print(car_petrol_df)
-
-class Car:
-    def __init__(self, name, fuel_efficiency, tank_capacity):
-        self.name = name
-        self.fuel_efficiency = fuel_efficiency
-        self.tank_capacity = tank_capacity
-
-    def calculate_max_distance(self):
-        return self.fuel_efficiency * self.tank_capacity
-
-    def calculate_refueling_stops(self, total_distance):
-        max_distance = self.calculate_max_distance()
-        return total_distance / max_distance
-
- 
-# Example usage
 if __name__ == "__main__":
-    # Define car 1 with its parameters
-    carsData = {}   
-    carsDataList = []
-    for index, row in car_petrol_df.iterrows():
-        car_petrol_df['ENGINE L']
-        car_petrol_df['FUEL TANK L']
-        car_petrol_df['MAKE']
+    print(car_petrol_df)
+    # Checking the null values 
+    car_petrol_df.isnull().sum()
+    # Handling missing value
+    car_petrol_df.dropna(inplace=True)
+    df_no_duplicates = car_petrol_df.drop_duplicates()
+    # Handling miss data type
+    def convert_str_num(df, col_name):
+        new_col = []
+        for i in df[col_name]:
+            new_col.append(int(i.replace(',', '')))
+        df[col_name] = new_col
+     
+    convert_str_num(df_no_duplicates,'RANGE km')
+    print(df_no_duplicates['MAKE'].value_counts())
+    print(df_no_duplicates['MAKE'].value_counts().index)
 
+    counts = df_no_duplicates['MAKE'].value_counts()
+    x = counts.index
+    y = counts.values
+
+    plt.figure(figsize=(10, 10))
+    ax1 = plt.subplot(2, 1, 1)
+    ax1 = sns.barplot(x=x, y=y)
+    ax1.set_title("Distribution of Car -- Petrol")
+    plt.xticks(rotation=90)
+
+    xPie = car_petrol_df.TYPE.value_counts()
+
+    fig = plt.figure(figsize=(10,6),tight_layout=True)
+    gs = gridspec.GridSpec(1, 2)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.pie(xPie, labels=xPie.index, autopct='%.2f%%', shadow=True, radius=0.75)
+    ax1.set_title("Petrol vehicle")
+
+    plt.show()
+
+    carsDataList = []
+    for index, row in df_no_duplicates.iterrows():
+
+        carsData = {}   
         carsData['name'] = row['MAKE']
         carsData['fuel_efficiency'] = row['FUEL TANK L']
         carsData['tank_capacity'] = row['ENGINE L']
@@ -47,11 +66,4 @@ if __name__ == "__main__":
     python_socket.sendall(city_coordinates_json.encode('utf-8'))
 
 # Close the socket
-python_socket.close()   
-    # Choosing the car requiring fewer refueling stops
-    #if refueling_stops_car1 < refueling_stops_car2:
-        #print(f"Hence, {car1.name} is expected to be more suitable for this trip.")
-    #elif refueling_stops_car1 > refueling_stops_car2:
-        #print(f"Hence, {car2.name} is expected to be more suitable for this trip.")
-    #else:
-        #print("Both cars are expected to require the same number of refueling stops.")
+python_socket.close() 

@@ -1,5 +1,7 @@
 package de.unihildesheim.iis.jadedemo;
 
+import javax.swing.SwingUtilities;
+
 import de.unihildesheim.iis.jadedemo.graph.City;
 import de.unihildesheim.iis.jadedemo.graph.MetaheuristicResponse;
 
@@ -57,8 +59,10 @@ public class Metaheuristic {
         }
 
         System.out.println("Final solution distance: " + best.getDistance());
-        System.out.println("Tour: " + best);
+        System.out.println("Tour: " + best.toString());
         System.out.println("Tour lenght : "+ best.tourSize());
+        final String coordinates = best.toString();
+        SwingUtilities.invokeLater(() -> new CoordinatesVisualization(coordinates));
         return new MetaheuristicResponse(best.tourSize(),best.getDistance());
     }
 }

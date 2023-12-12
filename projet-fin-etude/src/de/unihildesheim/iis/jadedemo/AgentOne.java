@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import de.unihildesheim.iis.jadedemo.graph.Car;
+import de.unihildesheim.iis.jadedemo.graph.CarListWrapper;
 import de.unihildesheim.iis.jadedemo.graph.City;
 import de.unihildesheim.iis.jadedemo.graph.TourManager;
 
@@ -47,17 +48,17 @@ public class AgentOne extends Agent {
             		Gson gson = new Gson();
                 	Type carsListType = new TypeToken<List<Car>>(){}.getType();
                     List<Car> dataCars = gson.fromJson(aclMsg.getContent(), carsListType);
-                    System.out.print("dataCities : " +dataCars);
+                   // System.out.print("dataCars : " +dataCars);
                     List<Car> carList = new ArrayList<>();
           		  for (Car car : dataCars) {
-          		    Car carObject = new Car(car.getName(), car.getFuel_efficiency(),car.getTank_capacity());
-                    carList.add(carObject);
+                    carList.add(car);
           		  }
-          		  System.out.println("listcar: " + carList);
-                  ACLMessage newMsg = new ACLMessage(ACLMessage.REQUEST);
-                  newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
-                  byte[] serializedList = serializeObject(carList);
-                  newMsg.setContentObject(serializedList);
+          		// Create a wrapper object that encapsulates the list of Car objects
+                 CarListWrapper wrapper = new CarListWrapper(carList);
+          		ACLMessage newMsg = new ACLMessage(ACLMessage.REQUEST);
+                newMsg.setContentObject(wrapper);
+                newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
+                send(newMsg);
             	}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -95,18 +96,5 @@ public class AgentOne extends Agent {
               e.printStackTrace();
           }
       }).start();
-  }
-//Method to serialize an object into a byte array
-  private byte[] serializeObject(Object obj) {
-      try {
-          ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-          ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
-          objectOutputStream.writeObject(obj);
-          objectOutputStream.flush();
-          return byteOutputStream.toByteArray();
-      } catch (IOException e) {
-          e.printStackTrace();
-          return null;
-      }
   }
 }

@@ -1,7 +1,6 @@
 package de.unihildesheim.iis.jadedemo;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -11,7 +10,6 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -26,7 +24,6 @@ import java.lang.reflect.Type;
  */
 public class AgentTwo extends Agent {
   private static final long serialVersionUID = 1L;
-  BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
   protected void setup() {
 
     // Define the behaviour
@@ -60,14 +57,14 @@ public class AgentTwo extends Agent {
           long end = System.currentTimeMillis();
           System.out.println("date execution : "+ (end - start) +"ms");
           ACLMessage newMsg = new ACLMessage(ACLMessage.REQUEST);
-          newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
           try {
-			newMsg.setContentObject(reponse.getFinalDistance());
-			send(newMsg);
-		} catch (IOException e) {
+			newMsg.setContentObject(reponse);
+		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
+          newMsg.addReceiver(new AID("AgentThree", AID.ISLOCALNAME));
+          send(newMsg);
         }
         block(); // Stop the behaviour until next message is received
       }
